@@ -1,0 +1,1 @@
+Ceci est une modification sur le footer pour générer un conflit.
