@@ -1,2 +1,1 @@
-Ceci est une modification sur le footer pour générer un conflit.
-Ceci est une modification sur contact pour générer un conflit.
+
