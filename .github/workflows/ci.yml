@@ -31,3 +31,15 @@ jobs:
       working-directory: ./todo-app
       run: |
         python -m pytest
+
+    - name: Notification Discord
+      if: always() # S'exécute que le job réussisse ou échoue
+      uses: appleboy/discord-action@master
+      with:
+        webhook_url: ${{ secrets.DISCORD_WEBHOOK }}
+        message: |
+          **Statut du build pour le projet `${{ github.repository }}`**
+          Commit : `${{ github.sha }}`
+          Auteur : `${{ github.actor }}`
+          Statut : `${{ job.status }}`
+          Voir les détails : ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
