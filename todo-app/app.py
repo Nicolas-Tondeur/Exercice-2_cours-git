@@ -6,3 +6,4 @@ if __name__ == "__main__":
     todo = []
     todo = add_task(todo, "Ma première tâche")
     print(todo)
+    print("Tâche ajoutée avec succès !")
