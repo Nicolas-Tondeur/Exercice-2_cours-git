@@ -32,14 +32,26 @@ jobs:
       run: |
         python -m pytest
 
-    - name: Notification Discord
-      if: always() # S'exécute que le job réussisse ou échoue
+    - name: Notification Discord en cas de succès
+      if: success()
       uses: appleboy/discord-action@master
+      continue-on-error: true
       with:
         webhook_url: ${{ secrets.DISCORD_WEBHOOK }}
         message: |
-          **Statut du build pour le projet `${{ github.repository }}`**
-          Commit : `${{ github.sha }}`
-          Auteur : `${{ github.actor }}`
-          Statut : `${{ job.status }}`
-          Voir les détails : ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          **Succès** sur le workflow **${{ github.workflow }}**
+          - **Branche**: `${{ github.ref_name }}`
+          - **Auteur**: `${{ github.actor }}`
+          - **Lien**: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+    - name: Notification Discord en cas d'échec
+      if: failure()
+      uses: appleboy/discord-action@master
+      continue-on-error: true
+      with:
+        webhook_url: ${{ secrets.DISCORD_WEBHOOK }}
+        message: |
+          **Échec** sur le workflow **${{ github.workflow }}**
+          - **Branche**: `${{ github.ref_name }}`
+          - **Auteur**: `${{ github.actor }}`
+          - **Lien**: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
