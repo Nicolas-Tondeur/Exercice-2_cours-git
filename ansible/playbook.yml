@@ -29,7 +29,7 @@
           server {
               listen 80;
               root /var/www/app;
-              index contact.html;
+              index todo-app/Contact.html;
               server_name _;
           }
       notify: Restart nginx
