@@ -1,86 +1,54 @@
-- name: Déployer l'application Todo
-  hosts: dev_container
-  become: yes # Exécuter les tâches avec des privilèges sudo
-
+---
+- name: Déploiement de l app web
+  hosts: webserver
+  become: yes
   tasks:
-    - name: Mettre à jour le cache APT et installer les dépendances système
+    - name: apt update
+      apt:
+        update_cache: yes
+
+    - name: Installation des dependances
       apt:
         name:
           - git
+          - nginx
           - python3
           - python3-pip
-          - nginx
         state: present
-        update_cache: yes
 
-    - name: Cloner le dépôt de l'application
+    - name: Cloner le repo git de l app
       git:
-        repo: 'https://github.com/Nicolas-Tondeur/Exercice-2_cours-git.git'
-        dest: /srv/todo-app
-        version: dev # Branche à cloner
-        force: yes # Écrase les changements locaux dans le dépôt sur la cible
+        repo: "https://github.com/Nicolas-Tondeur/Exercice-2_cours-git.git"
+        dest: /var/www/app
+        version: dev
 
-    - name: Installer les dépendances Python de l'application
-      pip:
-        requirements: /srv/todo-app/todo-app/requirements.txt
-        executable: pip3
-
-    - name: Configurer Nginx comme reverse proxy
+    - name: Configuration Nginx
       copy:
-        dest: /etc/nginx/sites-available/todoapp
+        dest: /etc/nginx/sites-available/app
         content: |
           server {
               listen 80;
+              root /var/www/app;
+              index contact.html;
               server_name _;
-
-              location / {
-                  proxy_pass http://127.0.0.1:8000; # On suppose que l'app tourne sur le port 8000
-                  proxy_set_header Host $host;
-                  proxy_set_header X-Real-IP $remote_addr;
-                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-              }
           }
+      notify: Restart nginx
 
-    - name: Activer la configuration Nginx
+    - name: Activation de la config Nginx
       file:
-        src: /etc/nginx/sites-available/todoapp
-        dest: /etc/nginx/sites-enabled/default
+        src: /etc/nginx/sites-available/app
+        dest: /etc/nginx/sites-enabled/app
         state: link
         force: yes
-      notify: Restart Nginx # Déclenche le handler pour redémarrer Nginx
 
-    - name: Créer un service systemd pour l'application
-      copy:
-        dest: /etc/systemd/system/todoapp.service
-        content: |
-          [Unit]
-          Description=Gunicorn instance to serve todoapp
-          After=network.target
-
-          [Service]
-          User=www-data
-          Group=www-data
-          WorkingDirectory=/srv/todo-app/todo-app
-          # Assurez-vous que gunicorn est dans requirements.txt
-          ExecStart=/usr/local/bin/gunicorn --workers 3 --bind unix:/srv/todo-app/todo-app/app.sock -m 007 wsgi:app
-          
-          [Install]
-          WantedBy=multi-user.target
-      notify: Reload systemd # Déclenche le handler pour recharger systemd
+    - name: Desactivation du site par défaut de Nginx
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      notify: Restart nginx
 
   handlers:
-    - name: Restart Nginx
+    - name: Restart nginx
       service:
         name: nginx
         state: restarted
-
-    - name: Reload systemd
-      systemd:
-        daemon_reload: yes
-      notify: Restart TodoApp
-
-    - name: Restart TodoApp
-      service:
-        name: todoapp
-        state: restarted
-        enabled: yes
