@@ -30,7 +30,7 @@
           server {
               listen 80;
               root /var/www/todoapp;
-              index contact.html;
+              index ./Contact.html;
               server_name _;
           }
       notify: Restart nginx
