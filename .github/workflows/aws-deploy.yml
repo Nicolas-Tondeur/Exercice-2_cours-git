@@ -21,7 +21,7 @@ jobs:
           echo "${{ secrets.AWS_SSH_KEY }}" > aws_app_todo.pem
           chmod 600 aws_app_todo.pem
 
-      - name: Déployment with Ansible
+      - name: Déploiement avec Ansible
         run: |
           ansible-playbook -i AWS/inventory_aws.ini AWS/deploy.yml
 
