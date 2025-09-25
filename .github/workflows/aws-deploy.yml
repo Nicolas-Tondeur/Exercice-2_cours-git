@@ -30,7 +30,7 @@ jobs:
       run: |
         # Nous modifions le fichier d'inventaire pour qu'il pointe vers la clé créée
         sed -i 's|ansible_ssh_private_key_file=.*|ansible_ssh_private_key_file=./aws_key.pem|' AWS/inventory_aws.ini
-        ansible-playbook -i AWS/inventory_aws.ini ansible/deploy.yml
+        ansible-playbook -i AWS/inventory_aws.ini AWS/deploy.yml
 
     - name: Suppression de la clé SSH
       if: always() 
