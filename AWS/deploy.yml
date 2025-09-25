@@ -1,13 +1,14 @@
 ---
-- name: Déploiement de l app web
-  hosts: aws_ec2
+- name: Deploy ToDoApp on AWS EC2
+  hosts: ec2
   become: yes
+
   tasks:
     - name: apt update
       apt:
         update_cache: yes
 
-    - name: Installation des dependances
+    - name: Installing dependencies
       apt:
         name:
           - git
@@ -16,32 +17,32 @@
           - python3-pip
         state: present
 
-    - name: Cloner le repo git de l app
+    - name: Git clone ToDoApp
       git:
         repo: "https://github.com/Nicolas-Tondeur/Exercice-2_cours-git.git"
-        dest: /var/www/app
+        dest: /var/www/todoapp
         version: dev
 
-    - name: Configuration Nginx
+    - name: Nginx configuration
       copy:
-        dest: /etc/nginx/sites-available/app
+        dest: /etc/nginx/sites-available/todoapp
         content: |
           server {
               listen 80;
-              root /var/www/app;
-              index todo-app/Contact.html;
+              root /var/www/todoapp;
+              index contact.html;
               server_name _;
           }
       notify: Restart nginx
 
-    - name: Activation de la config Nginx
+    - name: Activate ToDoApp
       file:
-        src: /etc/nginx/sites-available/app
-        dest: /etc/nginx/sites-enabled/app
+        src: /etc/nginx/sites-available/todoapp
+        dest: /etc/nginx/sites-enabled/todoapp
         state: link
         force: yes
 
-    - name: Desactivation du site par défaut de Nginx
+    - name: Remove default nginx site
       file:
         path: /etc/nginx/sites-enabled/default
         state: absent

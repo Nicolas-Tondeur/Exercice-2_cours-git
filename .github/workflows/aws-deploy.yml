@@ -1,4 +1,4 @@
-name: Deploy to AWS EC2
+name: Deploy ToDoApp to AWS
 
 on:
   push:
@@ -7,31 +7,23 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
-    - name: Récupération du code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Installation de Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
+      - name: Installer Ansible
+        run: sudo apt update && sudo apt install -y ansible sshpass
 
-    - name: Installation d'Ansible
-      run: pip install ansible
+      - name: Create private key file
+        run: |
+          echo "${{ secrets.AWS_SSH_KEY }}" > aws_app_todo.pem
+          chmod 600 aws_app_todo.pem
 
-    - name: Création de la clé SSH AWS
-      run: |
-        echo "${{ secrets.AWS_SSH_KEY }}" > aws_key.pem
-        chmod 600 aws_key.pem
+      - name: Déployment with Ansible
+        run: |
+          ansible-playbook -i ansible/inventory_aws.ini ansible/deploy.yml
 
-    - name: Lancement du playbook Ansible
-      run: |
-        # Nous modifions le fichier d'inventaire pour qu'il pointe vers la clé créée
-        sed -i 's|ansible_ssh_private_key_file=.*|ansible_ssh_private_key_file=./aws_key.pem|' AWS/inventory_aws.ini
-        ansible-playbook -i AWS/inventory_aws.ini AWS/deploy.yml
-
-    - name: Suppression de la clé SSH
-      if: always() 
-      run: rm -f aws_key.pem
+      - name: Remove key file
+        run: rm -f aws_app_todo.pem
