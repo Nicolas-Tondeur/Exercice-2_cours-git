@@ -1,6 +1,6 @@
 ---
 - name: Déploiement de l app web
-  hosts: webserver
+  hosts: aws_ec2
   become: yes
   tasks:
     - name: apt update
